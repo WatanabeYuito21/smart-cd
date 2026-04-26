@@ -138,12 +138,12 @@ crossterm = "0.27"
 
 | ファイル       | 状態                  |
 | -------------- | --------------------- |
-| Cargo.toml     | 🔲 依存クレート未追加 |
-| src/main.rs    | 🔲 スケルトンのみ     |
-| src/db.rs      | 🔲 未作成             |
-| src/matcher.rs | 🔲 未作成             |
-| src/ui.rs      | 🔲 未作成             |
-| src/shell.rs   | 🔲 未作成             |
+| Cargo.toml     | ✅ 完了 |
+| src/main.rs    | ✅ 完了 |
+| src/db.rs      | ✅ 完了 |
+| src/matcher.rs | ✅ 完了 |
+| src/ui.rs      | ✅ 完了 |
+| src/shell.rs   | ✅ 完了 |
 
 **推奨実装順:** db.rs → matcher.rs → main.rs(add/list) → ui.rs → main.rs(query) → shell.rs
 
