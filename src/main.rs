@@ -1,5 +1,6 @@
 mod db;
 mod matcher;
+mod shell;
 mod ui;
 
 use clap::{Parser, Subcommand};
@@ -30,9 +31,7 @@ fn main() {
         Command::Add { path } => cmd_add(&path),
         Command::List { paths_only } => cmd_list(paths_only),
         Command::Query { keywords } => cmd_query(&keywords),
-        Command::Init { .. } => {
-            eprintln!("init: shell.rs 未実装");
-        }
+        Command::Init { shell } => cmd_init(&shell),
     }
 }
 
@@ -58,6 +57,18 @@ fn cmd_list(paths_only: bool) {
             println!("{}", entry.path);
         } else {
             println!("{:.2}\t{}", entry.score(), entry.path);
+        }
+    }
+}
+
+fn cmd_init(shell: &str) {
+    match shell {
+        "bash" => print!("{}", shell::init_bash()),
+        "powershell" => print!("{}", shell::init_powershell()),
+        "cmd" => print!("{}", shell::init_cmd()),
+        other => {
+            eprintln!("Error: unknown shell '{other}'. Use bash, powershell, or cmd.");
+            std::process::exit(1);
         }
     }
 }
