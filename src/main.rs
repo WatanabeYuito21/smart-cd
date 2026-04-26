@@ -1,5 +1,6 @@
 mod db;
 mod matcher;
+mod ui;
 
 use clap::{Parser, Subcommand};
 
@@ -28,9 +29,7 @@ fn main() {
     match cli.command {
         Command::Add { path } => cmd_add(&path),
         Command::List { paths_only } => cmd_list(paths_only),
-        Command::Query { .. } => {
-            eprintln!("query: ui.rs 未実装");
-        }
+        Command::Query { keywords } => cmd_query(&keywords),
         Command::Init { .. } => {
             eprintln!("init: shell.rs 未実装");
         }
@@ -59,6 +58,29 @@ fn cmd_list(paths_only: bool) {
             println!("{}", entry.path);
         } else {
             println!("{:.2}\t{}", entry.score(), entry.path);
+        }
+    }
+}
+
+fn cmd_query(keywords: &[String]) {
+    let db = db::Database::load().unwrap_or_else(|e| {
+        eprintln!("Error: {e}");
+        std::process::exit(1);
+    });
+    let sorted = db.sorted_entries();
+    let kw_refs: Vec<&str> = keywords.iter().map(|s| s.as_str()).collect();
+    let matched = matcher::filter(&sorted, &kw_refs);
+
+    if matched.is_empty() {
+        std::process::exit(1);
+    }
+
+    match ui::select(&matched) {
+        Ok(ui::SelectResult::Selected(path)) => println!("{path}"),
+        Ok(ui::SelectResult::Cancelled) => std::process::exit(1),
+        Err(e) => {
+            eprintln!("Error: {e}");
+            std::process::exit(1);
         }
     }
 }
