@@ -135,6 +135,8 @@ crossterm = "0.27"
 ## Git ルール
 
 - コミットメッセージに `Co-Authored-By: Claude` 行を**含めない**
+- コミットメッセージは**日本語**で書く
+- 先頭に `fix` / `feat` / `add` / `update` / `docs` / `test` / `refactor` などのプレフィックスをつける（詳細は `SKILL.md` 参照）
 
 ---
 
