@@ -33,6 +33,21 @@ function global:prompt {
 "#
 }
 
+pub fn init_fish() -> &'static str {
+    r#"
+function _smart_cd_hook --on-variable PWD
+    smart-cd add "$PWD"
+end
+
+function z
+    set result (smart-cd query $argv 2>/dev/tty)
+    if test -n "$result"
+        cd $result
+    end
+end
+"#
+}
+
 pub fn init_cmd() -> &'static str {
     r#"
 @echo off

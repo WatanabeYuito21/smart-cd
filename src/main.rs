@@ -70,8 +70,9 @@ fn cmd_init(shell: &str) {
         "bash" => print!("{}", shell::init_bash()),
         "powershell" => print!("{}", shell::init_powershell()),
         "cmd" => print!("{}", shell::init_cmd()),
+        "fish" => print!("{}", shell::init_fish()),
         other => {
-            eprintln!("Error: unknown shell '{other}'. Use bash, powershell, or cmd.");
+            eprintln!("Error: unknown shell '{other}'. Use bash, powershell, cmd, or fish.");
             std::process::exit(1);
         }
     }
