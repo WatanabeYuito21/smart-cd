@@ -96,3 +96,102 @@ impl Database {
         entries
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use chrono::Duration;
+
+    fn entry(path: &str, visit_count: u32, hours_ago: i64) -> Entry {
+        Entry {
+            path: path.to_string(),
+            visit_count,
+            last_visited: Utc::now() - Duration::hours(hours_ago),
+        }
+    }
+
+    fn empty_db() -> Database {
+        Database { version: 1, entries: Vec::new() }
+    }
+
+    #[test]
+    fn score_recent_beats_old() {
+        let recent = entry("/recent", 1, 0);
+        let old = entry("/old", 1, 1000);
+        assert!(recent.score() > old.score());
+    }
+
+    #[test]
+    fn score_high_count_beats_low() {
+        let frequent = entry("/frequent", 10, 1);
+        let rare = entry("/rare", 1, 1);
+        assert!(frequent.score() > rare.score());
+    }
+
+    #[test]
+    fn score_is_positive() {
+        let e = entry("/some/path", 5, 100);
+        assert!(e.score() > 0.0);
+    }
+
+    #[test]
+    fn add_new_entry() {
+        let mut db = empty_db();
+        db.add("/foo");
+        assert_eq!(db.entries.len(), 1);
+        assert_eq!(db.entries[0].path, "/foo");
+        assert_eq!(db.entries[0].visit_count, 1);
+    }
+
+    #[test]
+    fn add_existing_increments_count() {
+        let mut db = empty_db();
+        db.add("/foo");
+        db.add("/foo");
+        assert_eq!(db.entries.len(), 1);
+        assert_eq!(db.entries[0].visit_count, 2);
+    }
+
+    #[test]
+    fn remove_existing_returns_true() {
+        let mut db = empty_db();
+        db.add("/foo");
+        assert!(db.remove("/foo"));
+        assert!(db.entries.is_empty());
+    }
+
+    #[test]
+    fn remove_missing_returns_false() {
+        let mut db = empty_db();
+        assert!(!db.remove("/nonexistent"));
+    }
+
+    #[test]
+    fn clean_removes_nonexistent_paths() {
+        let mut db = empty_db();
+        db.entries.push(entry("/nonexistent/ghost", 1, 0));
+        db.entries.push(entry("/tmp", 1, 0));
+        let removed = db.clean();
+        assert_eq!(removed, 1);
+        assert_eq!(db.entries.len(), 1);
+        assert_eq!(db.entries[0].path, "/tmp");
+    }
+
+    #[test]
+    fn clean_all_valid_removes_none() {
+        let mut db = empty_db();
+        db.entries.push(entry("/tmp", 1, 0));
+        assert_eq!(db.clean(), 0);
+        assert_eq!(db.entries.len(), 1);
+    }
+
+    #[test]
+    fn sorted_entries_descending_by_score() {
+        let mut db = empty_db();
+        db.entries.push(entry("/old", 1, 500));
+        db.entries.push(entry("/recent", 5, 0));
+        let sorted = db.sorted_entries();
+        assert_eq!(sorted[0].path, "/recent");
+        assert_eq!(sorted[1].path, "/old");
+    }
+}
