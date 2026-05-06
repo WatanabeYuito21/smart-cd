@@ -23,6 +23,8 @@ enum Command {
         keywords: Vec<String>,
     },
     Init { shell: String },
+    Remove { path: String },
+    Clean,
 }
 
 fn main() {
@@ -32,6 +34,8 @@ fn main() {
         Command::List { paths_only } => cmd_list(paths_only),
         Command::Query { keywords } => cmd_query(&keywords),
         Command::Init { shell } => cmd_init(&shell),
+        Command::Remove { path } => cmd_remove(&path),
+        Command::Clean => cmd_clean(),
     }
 }
 
@@ -71,6 +75,37 @@ fn cmd_init(shell: &str) {
             std::process::exit(1);
         }
     }
+}
+
+fn cmd_remove(path: &str) {
+    let mut db = db::Database::load().unwrap_or_else(|e| {
+        eprintln!("Error: {e}");
+        std::process::exit(1);
+    });
+    if !db.remove(path) {
+        eprintln!("Error: no entry found for '{path}'");
+        std::process::exit(1);
+    }
+    db.save().unwrap_or_else(|e| {
+        eprintln!("Error: {e}");
+        std::process::exit(1);
+    });
+    println!("Removed: {path}");
+}
+
+fn cmd_clean() {
+    let mut db = db::Database::load().unwrap_or_else(|e| {
+        eprintln!("Error: {e}");
+        std::process::exit(1);
+    });
+    let count = db.clean();
+    if count > 0 {
+        db.save().unwrap_or_else(|e| {
+            eprintln!("Error: {e}");
+            std::process::exit(1);
+        });
+    }
+    println!("Removed {count} stale entries.");
 }
 
 fn cmd_query(keywords: &[String]) {

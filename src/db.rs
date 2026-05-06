@@ -78,6 +78,18 @@ impl Database {
         }
     }
 
+    pub fn remove(&mut self, path: &str) -> bool {
+        let before = self.entries.len();
+        self.entries.retain(|e| e.path != path);
+        self.entries.len() < before
+    }
+
+    pub fn clean(&mut self) -> usize {
+        let before = self.entries.len();
+        self.entries.retain(|e| std::path::Path::new(&e.path).exists());
+        before - self.entries.len()
+    }
+
     pub fn sorted_entries(&self) -> Vec<&Entry> {
         let mut entries: Vec<&Entry> = self.entries.iter().collect();
         entries.sort_by(|a, b| b.score().partial_cmp(&a.score()).unwrap_or(std::cmp::Ordering::Equal));
