@@ -115,14 +115,9 @@ fn cmd_query(keywords: &[String]) {
         std::process::exit(1);
     });
     let sorted = db.sorted_entries();
-    let kw_refs: Vec<&str> = keywords.iter().map(|s| s.as_str()).collect();
-    let matched = matcher::filter(&sorted, &kw_refs);
+    let initial_query = keywords.join(" ");
 
-    if matched.is_empty() {
-        std::process::exit(1);
-    }
-
-    match ui::select(&matched) {
+    match ui::select(&sorted, &initial_query) {
         Ok(ui::SelectResult::Selected(path)) => println!("{path}"),
         Ok(ui::SelectResult::Cancelled) => std::process::exit(1),
         Err(e) => {
