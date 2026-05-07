@@ -26,6 +26,15 @@ rustup update
 cargo install --path .
 ```
 
+## Update
+
+最新のコードを取得してから再インストールするだけです:
+
+```bash
+git pull
+cargo install --path .
+```
+
 ## Shell Integration
 
 ### bash
