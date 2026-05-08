@@ -46,7 +46,31 @@ chmod +x "$INSTALL_DIR/smart-cd"
 
 echo "Installed to ${INSTALL_DIR}/smart-cd"
 
+# PATH が通っていなければシェルプロファイルに追記する
 case ":$PATH:" in
-  *":${INSTALL_DIR}:"*) ;;
-  *) echo "Note: add the following to your shell profile: export PATH=\"\$HOME/.local/bin:\$PATH\"" ;;
+  *":${INSTALL_DIR}:"*)
+    ;;
+  *)
+    PATH_LINE="export PATH=\"\$HOME/.local/bin:\$PATH\""
+
+    shell_name=$(basename "${SHELL:-sh}")
+    case "$shell_name" in
+      zsh)   profile="${HOME}/.zshrc" ;;
+      bash)  profile="${HOME}/.bashrc" ;;
+      fish)
+        mkdir -p "${HOME}/.config/fish/conf.d"
+        profile="${HOME}/.config/fish/conf.d/smart-cd-path.fish"
+        PATH_LINE="fish_add_path \$HOME/.local/bin"
+        ;;
+      *)     profile="${HOME}/.profile" ;;
+    esac
+
+    # 既に書いてあれば追記しない
+    if ! grep -qF ".local/bin" "$profile" 2>/dev/null; then
+      printf '\n%s\n' "$PATH_LINE" >> "$profile"
+      echo "Added PATH to ${profile}"
+    fi
+
+    echo "Restart your shell or run: source ${profile}"
+    ;;
 esac
