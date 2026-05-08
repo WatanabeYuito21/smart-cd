@@ -168,3 +168,7 @@ score = visit_count × (1 / (1 + 経過時間(h) × 0.01))
 |---|---|
 | Linux / WSL | `~/.local/share/smart-cd/db.json` |
 | Windows | `%APPDATA%\smart-cd\db.json` |
+
+## License
+
+MIT
