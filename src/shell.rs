@@ -18,8 +18,18 @@ z() {
 pub fn init_powershell() -> &'static str {
     r#"
 function global:z {
-    $result = smart-cd query @args
-    if ($LASTEXITCODE -eq 0 -and $result) {
+    # smart-cd writes UTF-8 to stdout; PowerShell 5.1 decodes native output
+    # with [Console]::OutputEncoding (often an OEM code page), so switch to
+    # UTF-8 only while reading the result.
+    $prevEncoding = [Console]::OutputEncoding
+    try {
+        try { [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding $false } catch {}
+        $result = smart-cd query @args
+        $code = $LASTEXITCODE
+    } finally {
+        try { [Console]::OutputEncoding = $prevEncoding } catch {}
+    }
+    if ($code -eq 0 -and $result) {
         $target = [string](@($result) | Select-Object -Last 1)
         if ($target) {
             Set-Location -LiteralPath $target
