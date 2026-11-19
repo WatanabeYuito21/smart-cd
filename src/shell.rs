@@ -18,16 +18,26 @@ z() {
 pub fn init_powershell() -> &'static str {
     r#"
 function global:z {
-    $result = smart-cd query @args 2>&1
+    $result = smart-cd query @args
     if ($LASTEXITCODE -eq 0 -and $result) {
-        Set-Location $result
+        $target = [string](@($result) | Select-Object -Last 1)
+        if ($target) {
+            Set-Location -LiteralPath $target
+        }
     }
 }
 
-$global:_smart_cd_orig_prompt = $function:prompt
+if (-not (Test-Path variable:global:_smart_cd_orig_prompt)) {
+    $global:_smart_cd_orig_prompt = $function:prompt
+}
+$global:_smart_cd_last = $null
 
 function global:prompt {
-    smart-cd add (Get-Location).Path | Out-Null
+    $current = (Get-Location).Path
+    if ($current -ne $global:_smart_cd_last) {
+        $global:_smart_cd_last = $current
+        smart-cd add $current | Out-Null
+    }
     & $global:_smart_cd_orig_prompt
 }
 "#

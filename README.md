@@ -89,7 +89,7 @@ eval "$(smart-cd init bash)"
 `$PROFILE` に以下を追加:
 
 ```powershell
-Invoke-Expression (smart-cd init powershell)
+Invoke-Expression ((smart-cd init powershell) | Out-String)
 ```
 
 ### fish

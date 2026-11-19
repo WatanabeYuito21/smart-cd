@@ -2,7 +2,7 @@ use crate::db::Entry;
 use crate::matcher;
 use crossterm::{
     cursor,
-    event::{self, Event, KeyCode, KeyModifiers},
+    event::{self, Event, KeyCode, KeyEventKind, KeyModifiers},
     execute, queue,
     style::{Color, Print, ResetColor, SetForegroundColor},
     terminal::{self, ClearType},
@@ -68,7 +68,8 @@ fn run_loop<'a>(
         last_lines = cur_lines;
 
         match event::read()? {
-            Event::Key(key) => match (key.code, key.modifiers) {
+            // Windows では Release イベントも届くため、Press 以外は無視する
+            Event::Key(key) if key.kind == KeyEventKind::Press => match (key.code, key.modifiers) {
                 (KeyCode::Char('j'), KeyModifiers::NONE)
                 | (KeyCode::Down, _)
                 | (KeyCode::Char('n'), KeyModifiers::CONTROL) => {
